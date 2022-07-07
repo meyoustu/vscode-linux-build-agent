@@ -26,17 +26,17 @@ jobs:
     strategy:
       matrix:
         include:
-          - job: bionic_x64
-          - job: centos7_devtoolset8_x64
-          - job: centos7_devtoolset8_arm64
+          - job: bionic-x64
+          - job: centos7-devtoolset8-x64
+          - job: centos7-devtoolset8-arm64
             env:
               qemu: true
-          - job: alpine_x64
-          - job: alpine_arm64
+          - job: alpine-x64
+          - job: alpine-arm64
             env:
               qemu: true
-          - job: stretch_arm64
-          - job: stretch_armhf
+          - job: stretch-arm64
+          - job: stretch-armhf
 
     steps:
       - uses: actions/checkout@v3
