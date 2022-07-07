@@ -43,8 +43,12 @@ jobs:
       - name: Build Container Image
         run: |
           cd ${{ matrix.job }} || exit
+          GITHUB_REPOSITORY=${{ github.repository }}
+          IMAGE_NAME="${GITHUB_REPOSITORY##*/}"
+          echo "IMAGE_NAME=$IMAGE_NAME" >>"$GITHUB_ENV"
+
           docker login "$CI_REGISTRY" -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
-          docker build -t "$CI_REGISTRY_USER/${{ matrix.job }}" .
+          docker build -t "$CI_REGISTRY_USER/$IMAGE_NAME:${{ matrix.job }}" .
 
       - name: Push Container Image
-        run: docker push "$CI_REGISTRY_USER/${{ matrix.job }}"
+        run: docker push "$CI_REGISTRY_USER/$IMAGE_NAME:${{ matrix.job }}"
