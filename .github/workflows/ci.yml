@@ -1,0 +1,53 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: CI
+
+on:
+  push:
+    branches:
+      - $default-branch
+      - dev/*
+    tags:
+      - v*.*.*
+  pull_request:
+    branches:
+      - $default-branch
+
+env:
+  CI_REGISTRY: docker.io
+  CI_REGISTRY_USER: ${{ secrets.CI_REGISTRY_USER }}
+  CI_REGISTRY_PASSWORD: ${{ secrets.CI_REGISTRY_PASSWORD }}
+
+jobs:
+  build-container-image:
+    name: Build Container Image (${{ matrix.job }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - job: bionic_x64
+          - job: centos7_devtoolset8_x64
+          - job: centos7_devtoolset8_arm64
+            env:
+              qemu: true
+          - job: alpine_x64
+          - job: alpine_arm64
+            env:
+              qemu: true
+          - job: stretch_arm64
+          - job: stretch_armhf
+
+    steps:
+      - name: Register Docker QEMU
+        if: env.qemu == 'true'
+        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+      - name: Build Container Image
+        run: |
+          cd ${{ matrix.job }} || exit
+          docker login "$CI_REGISTRY" -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
+          docker build -t "$CI_REGISTRY_USER/${{ matrix.job }}" .
+
+      - name: Push Container Image
+        run: docker push "$CI_REGISTRY_USER/${{ matrix.job }}"
